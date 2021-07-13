@@ -1,0 +1,18 @@
+class extends Model {
+
+    public function parent() {
+       return $this->belongsTo('App\Category', 'id', 'parent_id');
+    }
+
+    public function children() {
+        return $this->hasMany('App\Category', 'parent_id', 'id')->with('children');
+    }
+
+    public function products() {
+        return $this->belongsToMany('App\Product')->withTimestamps();
+    }
+}
+
+$categories = Category::with('children')
+        ->selectRaw('( SELECT COUNT(*) FROM `products` WHERE products.category_id IN (SELECT C.id from categories as C WHERE c.parent_id = categories.id) ) AS `product_count`')
+        ->get();
